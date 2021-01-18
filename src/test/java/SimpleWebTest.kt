@@ -1,6 +1,8 @@
 import com.codeborne.selenide.CollectionCondition
 import com.codeborne.selenide.Condition
 import com.codeborne.selenide.Selenide.*
+import com.codeborne.selenide.logevents.SelenideLogger
+import io.qameta.allure.selenide.AllureSelenide
 import oppabet.OppabetPage
 import oppabet.modalWindows.searchWindow.SearchWindow
 import org.openqa.selenium.By
@@ -8,6 +10,11 @@ import org.testng.annotations.Test
 import java.util.function.Predicate
 
 class SimpleWebTest {
+    init {
+        SelenideLogger.addListener("AllureSelenide",
+            AllureSelenide().screenshots(true).savePageSource(false))
+    }
+
     @Test
     fun weCanCloseSearchWindow() {
         OppabetPage().apply {
@@ -53,4 +60,21 @@ class SimpleWebTest {
             }
         }
     }
+
+    @Test
+    // here we get more clear code, but it's less control because appears new layer
+    fun weCanSeeSearchResultsLikePageIbject() {
+        OppabetPage().apply {
+            open("https://www.oppabet.com/")
+
+            getSection("LIVE Bets").apply {
+                val clubName = dashBoardChampItem[0].`$`(By.xpath(".//div[@class='c-events__team']"))
+                    .shouldBe(Condition.exist)
+                    .text()
+
+                searchEventsForClub(clubName)
+            }
+        }
+    }
+
 }
